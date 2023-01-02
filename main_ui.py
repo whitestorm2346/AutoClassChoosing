@@ -256,6 +256,8 @@ class MainUI:
         self.init_class_id_frame()
         self.init_buttons()
 
+        self.threads = []  # init thread
+
     def init_main_frame(self) -> None:
         self.root = Tk()
         self.root.resizable(False, False)
@@ -331,7 +333,6 @@ class MainUI:
         self.window_frame.bind('<Configure>', self.scrollbar_resize)
 
         self.entries = [InputObject(self.window_frame)]
-        self.threads = []
 
     def init_buttons(self) -> None:
         self.add_btn = Button(self.root)
@@ -407,6 +408,6 @@ class MainUI:
         self.root.mainloop()
 
 
-if __name__ == "__main__":   
+if __name__ == "__main__":
     main_ui = MainUI()
     main_ui.run()
