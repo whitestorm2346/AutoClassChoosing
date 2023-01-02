@@ -17,6 +17,7 @@ from datetime import datetime
 from time import sleep
 from selenium import webdriver  # for operating the website
 from selenium.webdriver.common.by import By
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import ddddocr  # for detecting the confirm code
 import base64   # for reading the image present in base 64
 
@@ -62,11 +63,8 @@ class AutoClassChoosing:
         edge_options = webdriver.EdgeOptions()
         edge_options.add_argument('--log-level=3')
 
-        self.driver = webdriver.Edge(
-            options=edge_options,
-            executable_path='msedgedriver.exe',
-            service_log_path='NUL'
-        )
+        if self.driver == None:
+            self.driver = webdriver.Edge(EdgeChromiumDriverManager().install())
 
         while True:
             login_status = self.login()

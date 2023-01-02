@@ -5,6 +5,8 @@ from datetime import datetime
 from time import sleep
 from selenium import webdriver  # for operating the website
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import ddddocr  # for detecting the confirm code
 import base64   # for reading the image present in base 64
 
@@ -44,11 +46,8 @@ class AutoClassChoosing:
         edge_options = webdriver.EdgeOptions()
         edge_options.add_argument('--log-level=3')
 
-        self.driver = webdriver.Edge(
-            options=edge_options,
-            executable_path='msedgedriver.exe',
-            service_log_path='NUL'
-        )
+        if self.driver == None:
+            self.driver = webdriver.Edge(EdgeChromiumDriverManager().install())
 
         while True:
             login_status = self.login()
@@ -227,86 +226,6 @@ class AutoClassChoosing:
 ENGLISH = 'Times New Roman'
 CHINESE = '微軟正黑體'
 
-root = Tk()
-root.resizable(False, False)
-root.geometry("500x700")
-root.title('AutoClassChoosing Set-up')
-
-
-### login part ###
-login_frame = LabelFrame(root)
-login_frame.config(text=' Login ', font=(ENGLISH, 12))
-login_frame.pack(side=TOP, fill='x', padx=10, pady=10)
-
-student_id_label = Label(login_frame)
-student_id_label.config(text='Student ID', font=(ENGLISH, 14, 'bold'))
-student_id_label.pack(side=TOP, pady=5)
-
-student_id = StringVar(login_frame)
-student_id_entry = Entry(login_frame)
-student_id_entry.config(font=(ENGLISH, 12), textvariable=student_id)
-student_id_entry.pack(side=TOP, fill='x', padx=5, pady=10)
-
-password_label = Label(login_frame)
-password_label.config(text='Password', font=(ENGLISH, 14, 'bold'))
-password_label.pack(side=TOP, pady=5)
-
-password = StringVar(login_frame)
-password_entry = Entry(login_frame)
-password_entry.config(font=(ENGLISH, 12), textvariable=password)
-password_entry.pack(side=TOP, fill='x', padx=5, pady=10)
-
-
-# datetime setting part
-datetime_frame = LabelFrame(root)
-datetime_frame.config(text=' Date-time Setting ', font=(ENGLISH, 12))
-datetime_frame.pack(side=TOP, fill=X, padx=10, pady=10)
-
-datetime_label = Label(datetime_frame)
-datetime_label.config(text='YYYY/MM/DD hh:mm ',
-                      font=(ENGLISH, 14, 'bold'))
-datetime_label.pack(side=LEFT, padx=15, pady=10)
-
-datetime_str = StringVar(datetime_frame)
-datetime_entry = Entry(datetime_frame)
-datetime_entry.config(font=(ENGLISH, 12), textvariable=datetime_str)
-datetime_entry.pack(side=LEFT, padx=10, pady=10)
-
-
-### class ID part ###
-class_id_frame = LabelFrame(root)
-class_id_frame.config(text=' Class ID Input ', font=(ENGLISH, 12))
-class_id_frame.pack(side=TOP, fill='x', padx=10, pady=10)
-
-inner_frame = Frame(class_id_frame)
-inner_frame.pack(fill=BOTH, expand=True)
-
-inner_canvas = Canvas(inner_frame)
-inner_canvas.pack(side=LEFT, fill=BOTH, expand=True)
-
-scrollbar = ttk.Scrollbar(inner_frame, orient=VERTICAL,
-                          command=inner_canvas.yview)
-scrollbar.pack(side=RIGHT, fill=Y)
-
-inner_canvas.configure(yscrollcommand=scrollbar.set)
-inner_canvas.bind('<Configure>', lambda e: inner_canvas.configure(
-    scrollregion=inner_canvas.bbox('all')))
-
-window_frame = Frame(inner_canvas)
-
-inner_canvas.create_window((0, 0), window=window_frame, anchor='nw')
-
-
-def scrollbar_resize(event):
-    size = (window_frame.winfo_reqwidth(), window_frame.winfo_reqheight())
-    inner_canvas.config(scrollregion="0 0 %s %s" % size)
-
-    if window_frame.winfo_reqwidth() != inner_canvas.winfo_width():
-        inner_canvas.config(width=window_frame.winfo_reqwidth())
-
-
-window_frame.bind('<Configure>', scrollbar_resize)
-
 
 class InputObject:
     def __init__(self, container) -> None:
@@ -329,87 +248,165 @@ class InputObject:
         self.label.destroy()
 
 
-entries = [InputObject(window_frame)]
-threads = []
+class MainUI:
+    def __init__(self) -> None:
+        self.init_main_frame()
+        self.init_login_frame()
+        self.init_datetime_frame()
+        self.init_class_id_frame()
+        self.init_buttons()
+
+    def init_main_frame(self) -> None:
+        self.root = Tk()
+        self.root.resizable(False, False)
+        self.root.geometry("500x700")
+        self.root.title('AutoClassChoosing Set-up')
+
+    def init_login_frame(self) -> None:
+        self.login_frame = LabelFrame(self.root)
+        self.login_frame.config(text=' Login ', font=(ENGLISH, 12))
+        self.login_frame.pack(side=TOP, fill='x', padx=10, pady=10)
+
+        self.student_id_label = Label(self.login_frame)
+        self.student_id_label.config(
+            text='Student ID', font=(ENGLISH, 14, 'bold'))
+        self.student_id_label.pack(side=TOP, pady=5)
+
+        self.student_id = StringVar(self.login_frame)
+        self.student_id_entry = Entry(self.login_frame)
+        self.student_id_entry.config(
+            font=(ENGLISH, 12), textvariable=self.student_id)
+        self.student_id_entry.pack(side=TOP, fill='x', padx=5, pady=10)
+
+        self.password_label = Label(self.login_frame)
+        self.password_label.config(text='Password', font=(ENGLISH, 14, 'bold'))
+        self.password_label.pack(side=TOP, pady=5)
+
+        self.password = StringVar(self.login_frame)
+        self.password_entry = Entry(self.login_frame)
+        self.password_entry.config(
+            font=(ENGLISH, 12), textvariable=self.password)
+        self.password_entry.pack(side=TOP, fill='x', padx=5, pady=10)
+
+    def init_datetime_frame(self) -> None:
+        self.datetime_frame = LabelFrame(self.root)
+        self.datetime_frame.config(
+            text=' Date-time Setting ', font=(ENGLISH, 12))
+        self.datetime_frame.pack(side=TOP, fill=X, padx=10, pady=10)
+
+        self.datetime_label = Label(self.datetime_frame)
+        self.datetime_label.config(text='YYYY/MM/DD hh:mm ',
+                                   font=(ENGLISH, 14, 'bold'))
+        self.datetime_label.pack(side=LEFT, padx=15, pady=10)
+
+        self.datetime_str = StringVar(self.datetime_frame)
+        self.datetime_entry = Entry(self.datetime_frame)
+        self.datetime_entry.config(
+            font=(ENGLISH, 12), textvariable=self.datetime_str)
+        self.datetime_entry.pack(side=LEFT, padx=10, pady=10)
+
+    def init_class_id_frame(self) -> None:
+        self.class_id_frame = LabelFrame(self.root)
+        self.class_id_frame.config(text=' Class ID Input ', font=(ENGLISH, 12))
+        self.class_id_frame.pack(side=TOP, fill='x', padx=10, pady=10)
+
+        self.inner_frame = Frame(self.class_id_frame)
+        self.inner_frame.pack(fill=BOTH, expand=True)
+
+        self.inner_canvas = Canvas(self.inner_frame)
+        self.inner_canvas.pack(side=LEFT, fill=BOTH, expand=True)
+
+        self.scrollbar = ttk.Scrollbar(self.inner_frame, orient=VERTICAL,
+                                       command=self.inner_canvas.yview)
+        self.scrollbar.pack(side=RIGHT, fill=Y)
+
+        self.inner_canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.inner_canvas.bind('<Configure>', lambda e: self.inner_canvas.configure(
+            scrollregion=self.inner_canvas.bbox('all')))
+
+        self.window_frame = Frame(self.inner_canvas)
+
+        self.inner_canvas.create_window(
+            (0, 0), window=self.window_frame, anchor='nw')
+        self.window_frame.bind('<Configure>', self.scrollbar_resize)
+
+        self.entries = [InputObject(self.window_frame)]
+        self.threads = []
+
+    def init_buttons(self) -> None:
+        self.add_btn = Button(self.root)
+        self.add_btn.config(text='add', font=(ENGLISH, 14, 'bold'),
+                            height=2, width=6, command=self.add_btn_onclick)
+        self.add_btn.pack(side=LEFT, padx=20)
+
+        self.del_btn = Button(self.root)
+        self.del_btn.config(text='del', font=(ENGLISH, 14, 'bold'),
+                            height=2, width=6, command=self.del_btn_onclick)
+        self.del_btn.pack(side=LEFT, padx=20)
+
+        self.start_btn = Button(self.root)
+        self.start_btn.config(text='start', font=(ENGLISH, 14, 'bold'),
+                              height=2, width=8, command=self.start_btn_onclick)
+        self.start_btn.pack(side=LEFT, padx=20)
+
+        self.quit_btn = Button(self.root)
+        self.quit_btn.config(text='quit', font=(ENGLISH, 14, 'bold'),
+                             height=2, width=8, command=self.quit_btn_onclick)
+        self.quit_btn.pack(side=LEFT, padx=20)
+
+    def place_entries(self):
+        for i in range(0, len(self.entries)):
+            self.entries[i].set_label('Class ID ' + str(i + 1))
+            self.entries[i].place(i)
+
+    def scrollbar_resize(self, event):
+        size = (self.window_frame.winfo_reqwidth(),
+                self.window_frame.winfo_reqheight())
+        self.inner_canvas.config(scrollregion="0 0 %s %s" % size)
+
+        if self.window_frame.winfo_reqwidth() != self.inner_canvas.winfo_width():
+            self.inner_canvas.config(width=self.window_frame.winfo_reqwidth())
+
+    def auto_class_choosing(self):
+        self.bot = AutoClassChoosing(
+            student_num=self.student_id.get(),
+            password=self.password.get(),
+            starting_time=self.datetime_str.get()
+        )
+
+        self.bot.run(entries=self.entries)
+
+    def add_btn_onclick(self):
+        idx = len(self.entries)
+
+        self.entries.append(InputObject(self.window_frame))
+        self.entries[idx].set_label('Class ID ' + str(idx + 1))
+        self.entries[idx].place(idx)
+
+    def del_btn_onclick(self):
+        if len(self.entries) <= 1:
+            return
+
+        self.entries[-1].destroy()
+        self.entries.pop()
+
+    def start_btn_onclick(self):
+        self.threads.append(threading.Thread(target=self.auto_class_choosing))
+        self.threads[-1].start()
+
+    def quit_btn_onclick(self):
+        size = len(self.threads)
+
+        for i in range(0, size):
+            self.threads.pop()
+
+        self.root.quit()
+
+    def run(self) -> None:
+        self.place_entries()
+        self.root.mainloop()
 
 
-def place_entries():
-    global entries
-
-    for i in range(0, len(entries)):
-        entries[i].set_label('Class ID ' + str(i + 1))
-        entries[i].place(i)
-
-
-def auto_class_choosing():
-    global student_id, password, datetime_str, entries
-
-    bot = AutoClassChoosing(
-        student_num=student_id.get(),
-        password=password.get(),
-        starting_time=datetime_str.get()
-    )
-
-    bot.run(entries=entries)
-
-
-def add_btn_onclick():
-    global entries, inner_canvas
-
-    idx = len(entries)
-
-    entries.append(InputObject(window_frame))
-    entries[idx].set_label('Class ID ' + str(idx + 1))
-    entries[idx].place(idx)
-
-
-def del_btn_onclick():
-    global entries, inner_canvas
-
-    if len(entries) <= 1:
-        return
-
-    entries[-1].destroy()
-    entries.pop()
-
-
-def start_btn_onclick():
-    global threads
-
-    threads.append(threading.Thread(target=auto_class_choosing))
-    threads[-1].start()
-
-
-def quit_btn_onclick():
-    global root, threads
-
-    size = len(threads)
-
-    for i in range(0, size):
-        threads.pop()
-
-    root.quit()
-
-
-add_btn = Button(root)
-add_btn.config(text='add', font=(ENGLISH, 14, 'bold'),
-               height=2, width=6, command=add_btn_onclick)
-add_btn.pack(side=LEFT, padx=20)
-
-del_btn = Button(root)
-del_btn.config(text='del', font=(ENGLISH, 14, 'bold'),
-               height=2, width=6, command=del_btn_onclick)
-del_btn.pack(side=LEFT, padx=20)
-
-start_btn = Button(root)
-start_btn.config(text='start', font=(ENGLISH, 14, 'bold'),
-                 height=2, width=8, command=start_btn_onclick)
-start_btn.pack(side=LEFT, padx=20)
-
-quit_btn = Button(root)
-quit_btn.config(text='quit', font=(ENGLISH, 14, 'bold'),
-                height=2, width=8, command=quit_btn_onclick)
-quit_btn.pack(side=LEFT, padx=20)
-
-place_entries()
-root.mainloop()
+if __name__ == "__main__":   
+    main_ui = MainUI()
+    main_ui.run()
