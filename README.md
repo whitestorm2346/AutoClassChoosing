@@ -1,5 +1,17 @@
 # AutoClassChoosing
 
+## Version 2.0
+
+### What's new?
+
+In this version, the program will automatically download the web driver, so you don't have to set up by yourself.
+
+### Download
+
+[Chrome Version](https://www.dropbox.com/s/ja6lkf93uiymkhe/%E6%8A%8A%E6%88%91%E8%A7%A3%E5%A3%93%E7%B8%AE_Chrome.rar?raw=1)
+
+[Microsoft Edge Version](https://www.dropbox.com/s/65dk1a7q19ch8sj/%E6%8A%8A%E6%88%91%E8%A7%A3%E5%A3%93%E7%B8%AE_Edge.rar?raw=1)
+
 ## How to use it?
 
 ### Login

@@ -5,8 +5,8 @@ from datetime import datetime
 from time import sleep
 from selenium import webdriver  # for operating the website
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import ddddocr  # for detecting the confirm code
 import base64   # for reading the image present in base 64
 
@@ -32,7 +32,15 @@ class AutoClassChoosing:
         self.password = password
         self.starting_time = starting_time
         self.expiry_time = expiry_time
-        self.driver = driver
+        self.__init_driver__()
+
+    def __init_driver__(self) -> None:
+        chrome_option = Options()
+        chrome_option.add_argument('--log-level=3')
+        self.driver = webdriver.Chrome(
+            executable_path=ChromeDriverManager().install(),
+            options=chrome_option
+        )
 
     def run(self, entries) -> int:
         self.starting_time = datetime.strptime(
@@ -42,12 +50,6 @@ class AutoClassChoosing:
 
         while not self.clock_on_time():
             sleep(1)
-
-        edge_options = webdriver.EdgeOptions()
-        edge_options.add_argument('--log-level=3')
-
-        if self.driver == None:
-            self.driver = webdriver.Edge(EdgeChromiumDriverManager().install())
 
         while True:
             login_status = self.login()
