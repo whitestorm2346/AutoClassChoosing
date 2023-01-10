@@ -1,10 +1,10 @@
 # AutoClassChoosing
 
-## Version 2.0
+## Version 3.0
 
 ### What's new?
 
-In this version, the program will automatically download the web driver, so you don't have to set up by yourself.
+In this version, the web driver uses english version website to choose the classes and that will be a little bit faster to done this program.
 
 ### Download
 

@@ -13,8 +13,8 @@ import base64   # for reading the image present in base 64
 LOGIN_URL = 'https://www.ais.tku.edu.tw/EleCos/login.aspx'
 TARGET_URL = 'https://www.ais.tku.edu.tw/EleCos/action.aspx'
 
-RESULT_FILE = 'result.txt'
-CLASS_ID_FILE = 'classID.txt'
+LOGIN_URL_ENG = 'https://www.ais.tku.edu.tw/EleCos_English/loginE.aspx'
+TARGET_URL_ENG = 'https://www.ais.tku.edu.tw/EleCos_English/actionE.aspx'
 
 LOGIN_FAIL = "E999 淡江大學個人化入口網帳密驗證失敗或驗證伺服器忙碌中, 請重新輸入或請參考密碼說明..."
 CONFIRM_FAIL = "請輸入學號、密碼及驗證碼...(「淡江大學單一登入(SSO)」單一帳密驗證密碼)\n" \
@@ -22,16 +22,28 @@ CONFIRM_FAIL = "請輸入學號、密碼及驗證碼...(「淡江大學單一登
                "例如西元生日為1997/01/05，則後6碼為970105※\nE903 驗證碼輸入錯誤,請重新輸入 !!!"
 WRONG_TIME = "E999 登入失敗(非帳號密碼錯誤) ???\nE051 目前不是您的選課開放時間"
 
+LOGIN_FAIL_ENG = "E901 Student ID number error???"
+CONFIRM_FAIL_ENG = "Please enter your Student ID number, Password and Verify code !!!\n" \
+    "(Since Fall 2016, the default password (for freshmen and transfer students) " \
+    "of \"TamKang University Single Sign On (SSO)\" will be set as the last six digits " \
+    "of your date of birth (yyyy/mm/dd), for example, if your birthday is 1997/01/05, " \
+    "your password will be 970105.)\nE903 Confirm code input Error !!!"
+WRONG_TIME_ENG = "E999 Login Unsuccessful???\nE051 Currently not open for you"
+
 ADD_SUCCESS = "加選成功"
 ADD_FAIL = "加選失敗"
 
+ADD_SUCCESS_ENG = "Add successfully"
+ADD_FAIL_ENG = "Add Failed"
+
+RESULT_FILE = 'result.txt'
+
 
 class AutoClassChoosing:
-    def __init__(self, student_num='', password='', starting_time='', expiry_time='', driver=None) -> None:
+    def __init__(self, student_num='', password='', starting_time='') -> None:
         self.student_num = student_num
         self.password = password
         self.starting_time = starting_time
-        self.expiry_time = expiry_time
         self.__init_driver__()
 
     def __init_driver__(self) -> None:
@@ -74,8 +86,16 @@ class AutoClassChoosing:
 
         if class_choosing_status == 0:  # class choosing successfully
             print('完成自動選課，詳細結果紀錄於 result.txt')
+
+            logout_btn = self.driver.find_element(
+                By.XPATH, '//*[@id="btnLogout"]')
+            logout_btn.click()
+
+            self.driver.close()
         else:
             print('選課錯誤，程式將中斷執行')
+
+            self.driver.close()
             exit(1)
 
         return 0
@@ -87,7 +107,7 @@ class AutoClassChoosing:
         return is_expired
 
     def login(self) -> int:
-        self.driver.get(LOGIN_URL)
+        self.driver.get(LOGIN_URL_ENG)
 
         try:
             # student number input
@@ -116,17 +136,17 @@ class AutoClassChoosing:
         login_btn = self.driver.find_element(By.XPATH, '//*[@id="btnLogin"]')
         login_btn.click()
 
-        if self.driver.current_url == TARGET_URL:
+        if self.driver.current_url == TARGET_URL_ENG:
             return 0
         else:
             msg = self.driver.find_element(
-                By.XPATH, '//*[@id="form1"]/div[3]/table/tbody/tr[6]/td[2]')
+                By.XPATH, '//*[@id="TABLE1"]/tbody/tr[6]/td[2]')
 
-            if msg.text == LOGIN_FAIL:
+            if msg.text == LOGIN_FAIL_ENG:
                 return 1
-            elif msg.text == CONFIRM_FAIL:
+            elif msg.text == CONFIRM_FAIL_ENG:
                 return 2
-            elif WRONG_TIME in msg.text:
+            elif WRONG_TIME_ENG in msg.text:
                 return 3
             else:
                 return 4
@@ -156,40 +176,6 @@ class AutoClassChoosing:
 
         return confirm_code
 
-    def choose_classes(self) -> int:
-        with open('result.txt', 'w') as result_file:
-            with open('classID.txt', 'r') as class_id_file:
-                for id in class_id_file:
-                    line = '開課序號：' + id + ' '
-
-                    # class id input
-                    class_id_input = self.driver.find_element(
-                        By.XPATH, '//*[@id="txtCosEleSeq"]')
-                    class_id_input.clear()
-                    class_id_input.send_keys(id)
-
-                    # add button click
-                    add_btn = self.driver.find_element(
-                        By.XPATH, '//*[@id="btnAdd"]')
-                    add_btn.click()
-
-                    msg = self.driver.find_element(
-                        By.XPATH, '//*[@id="form1"]/div[3]/table/tbody/tr[2]/td[3]')
-
-                    msg_in_line = msg.text.split('\n')
-
-                    if ADD_SUCCESS in msg.text:
-                        line += ADD_SUCCESS
-                    elif ADD_FAIL in msg.text:
-                        line += (ADD_FAIL + " ")
-                        line += msg_in_line[1]
-                    else:
-                        line += "ERROR"
-
-                    result_file.write(line + '\n')
-
-        return 0
-
     def choose_classes(self, entries) -> int:
         with open('result.txt', 'w') as result_file:
             for entry in entries:
@@ -212,9 +198,9 @@ class AutoClassChoosing:
 
                 msg_in_line = msg.text.split('\n')
 
-                if ADD_SUCCESS in msg.text:
+                if ADD_SUCCESS_ENG in msg.text:
                     line += ADD_SUCCESS
-                elif ADD_FAIL in msg.text:
+                elif ADD_FAIL_ENG in msg.text:
                     line += (ADD_FAIL + " ")
                     line += msg_in_line[1]
                 else:
