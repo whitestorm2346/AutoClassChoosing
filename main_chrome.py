@@ -40,10 +40,9 @@ RESULT_FILE = 'result.txt'
 
 
 class AutoClassChoosing:
-    def __init__(self, student_num='', password='', starting_time='') -> None:
+    def __init__(self, student_num, password) -> None:
         self.student_num = student_num
         self.password = password
-        self.starting_time = starting_time
         self.__init_driver__()
 
     def __init_driver__(self) -> None:
@@ -55,13 +54,7 @@ class AutoClassChoosing:
         )
 
     def run(self, entries) -> int:
-        self.starting_time = datetime.strptime(
-            self.starting_time, '%Y/%m/%d %H:%M')
-
         print('基本設定完成，將於指定時間自動登入選課')
-
-        while not self.clock_on_time():
-            sleep(1)
 
         while True:
             login_status = self.login()
@@ -76,8 +69,11 @@ class AutoClassChoosing:
             elif login_status == 2:  # wrong confirm code
                 print('驗證碼錯誤，程式將重新判讀一次')
             elif login_status == 3:  # wrong login time
-                self.starting_time = input(
-                    '非登入時間，請輸入正確的選課起始時間(例如： 2022/08/07 12:30): ')
+                print(
+                    f'程式將自動於{datetime.strftime(self.starting_time, "%Y/%m/%d %H:%M:%S")}執行自動選課')
+
+                while not self.clock_on_time():
+                    sleep(1)
             else:  # other situations
                 print('登入錯誤，程式將中斷執行')
                 exit(1)
@@ -147,6 +143,13 @@ class AutoClassChoosing:
             elif msg.text == CONFIRM_FAIL_ENG:
                 return 2
             elif WRONG_TIME_ENG in msg.text:
+                msg_text = msg.text.split('\n')
+                time_info = msg_text[2].split(' ')
+                time = time_info[7] + ' ' + time_info[8]
+
+                self.starting_time = datetime.strptime(
+                    time, '%Y-%m-%d %H:%M:%S')
+
                 return 3
             else:
                 return 4
@@ -210,6 +213,9 @@ class AutoClassChoosing:
 
         return 0
 
+    def close(self) -> None:
+        self.driver.close()
+
 
 ENGLISH = 'Times New Roman'
 CHINESE = '微軟正黑體'
@@ -240,7 +246,6 @@ class MainUI:
     def __init__(self) -> None:
         self.init_main_frame()
         self.init_login_frame()
-        self.init_datetime_frame()
         self.init_class_id_frame()
         self.init_buttons()
 
@@ -249,7 +254,7 @@ class MainUI:
     def init_main_frame(self) -> None:
         self.root = Tk()
         self.root.resizable(False, False)
-        self.root.geometry("500x700")
+        self.root.geometry("400x600")
         self.root.title('AutoClassChoosing Set-up')
 
     def init_login_frame(self) -> None:
@@ -277,23 +282,6 @@ class MainUI:
         self.password_entry.config(
             font=(ENGLISH, 12), textvariable=self.password)
         self.password_entry.pack(side=TOP, fill='x', padx=5, pady=10)
-
-    def init_datetime_frame(self) -> None:
-        self.datetime_frame = LabelFrame(self.root)
-        self.datetime_frame.config(
-            text=' Date-time Setting ', font=(ENGLISH, 12))
-        self.datetime_frame.pack(side=TOP, fill=X, padx=10, pady=10)
-
-        self.datetime_label = Label(self.datetime_frame)
-        self.datetime_label.config(text='YYYY/MM/DD hh:mm ',
-                                   font=(ENGLISH, 14, 'bold'))
-        self.datetime_label.pack(side=LEFT, padx=15, pady=10)
-
-        self.datetime_str = StringVar(self.datetime_frame)
-        self.datetime_entry = Entry(self.datetime_frame)
-        self.datetime_entry.config(
-            font=(ENGLISH, 12), textvariable=self.datetime_str)
-        self.datetime_entry.pack(side=LEFT, padx=10, pady=10)
 
     def init_class_id_frame(self) -> None:
         self.class_id_frame = LabelFrame(self.root)
@@ -326,22 +314,22 @@ class MainUI:
         self.add_btn = Button(self.root)
         self.add_btn.config(text='add', font=(ENGLISH, 14, 'bold'),
                             height=2, width=6, command=self.add_btn_onclick)
-        self.add_btn.pack(side=LEFT, padx=20)
+        self.add_btn.pack(side=LEFT, padx=5)
 
         self.del_btn = Button(self.root)
         self.del_btn.config(text='del', font=(ENGLISH, 14, 'bold'),
                             height=2, width=6, command=self.del_btn_onclick)
-        self.del_btn.pack(side=LEFT, padx=20)
+        self.del_btn.pack(side=LEFT, padx=5)
 
         self.start_btn = Button(self.root)
         self.start_btn.config(text='start', font=(ENGLISH, 14, 'bold'),
                               height=2, width=8, command=self.start_btn_onclick)
-        self.start_btn.pack(side=LEFT, padx=20)
+        self.start_btn.pack(side=LEFT, padx=5)
 
         self.quit_btn = Button(self.root)
         self.quit_btn.config(text='quit', font=(ENGLISH, 14, 'bold'),
                              height=2, width=8, command=self.quit_btn_onclick)
-        self.quit_btn.pack(side=LEFT, padx=20)
+        self.quit_btn.pack(side=LEFT, padx=5)
 
     def place_entries(self):
         for i in range(0, len(self.entries)):
@@ -359,8 +347,7 @@ class MainUI:
     def auto_class_choosing(self):
         self.bot = AutoClassChoosing(
             student_num=self.student_id.get(),
-            password=self.password.get(),
-            starting_time=self.datetime_str.get()
+            password=self.password.get()
         )
 
         self.bot.run(entries=self.entries)
@@ -389,7 +376,9 @@ class MainUI:
         for i in range(0, size):
             self.threads.pop()
 
+        self.bot.close()
         self.root.quit()
+        exit(1)
 
     def run(self) -> None:
         self.place_entries()
