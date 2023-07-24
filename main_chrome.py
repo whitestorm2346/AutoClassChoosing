@@ -376,7 +376,11 @@ class MainUI:
         for i in range(0, size):
             self.threads.pop()
 
-        self.bot.close()
+        try:
+            self.bot.close()
+        except Exception as e:
+            print('網頁已關閉')
+
         self.root.quit()
         exit(1)
 
