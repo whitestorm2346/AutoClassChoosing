@@ -1,7 +1,7 @@
 import threading
 from tkinter import *
 from tkinter import ttk
-from datetime import datetime
+from datetime import datetime, time
 from time import sleep
 from selenium import webdriver  # for operating the website
 from selenium.webdriver.common.by import By
@@ -54,28 +54,28 @@ class AutoClassChoosing:
         )
 
     def run(self, entries) -> int:
-        print('基本設定完成，將於指定時間自動登入選課')
+        print('Finish the set up. The program will start automatically after countdown.')
 
         while True:
             login_status = self.login()
 
             if login_status == 0:  # login success
-                print('登入成功!!')
+                print('Login successfully!!')
                 break
             elif login_status == 1:  # wrong password or wrong student number
-                print('學號或密碼錯誤!')
-                self.student_num = input('請輸入學號： ')
-                self.password = input('請輸入密碼： ')
+                print('ID or password incorrect!')
+                self.student_num = input('Please enter your ID: ')
+                self.password = input('Please enter your password: ')
             elif login_status == 2:  # wrong confirm code
-                print('驗證碼錯誤，程式將重新判讀一次')
+                print('Wrong confirm code, program will retry now.')
             elif login_status == 3:  # wrong login time
                 print(
-                    f'程式將自動於{datetime.strftime(self.starting_time, "%Y/%m/%d %H:%M:%S")}執行自動選課')
+                    f'The program will start at {datetime.strftime(self.starting_time, "%Y/%m/%d %H:%M:%S")}')
 
                 while not self.clock_on_time():
                     sleep(1)
             else:  # other situations
-                print('登入錯誤，程式將中斷執行')
+                print('Login error!')
                 exit(1)
 
         class_choosing_status = self.choose_classes(entries=entries)
@@ -152,6 +152,11 @@ class AutoClassChoosing:
 
                 return 3
             else:
+                current_date = datetime.now().date()
+                noon_time = time(hour=12, minute=30)
+
+                self.starting_time = datetime.combine(current_date, noon_time)
+
                 return 4
 
     def auto_detect_confirm_code(self) -> str:
@@ -174,7 +179,7 @@ class AutoClassChoosing:
 
         # decode image(base64) to confirm code
         img = base64.b64decode(captchaBase64.split(',')[1])
-        ocr = ddddocr.DdddOcr()
+        ocr = ddddocr.DdddOcr(show_ad=False)
         confirm_code = ocr.classification(img)
 
         return confirm_code
