@@ -1,4 +1,2 @@
-開課序號：2080 加選失敗 E079 Senior Students are only allowed to enroll in one Required PE courses and only the daytime students can enroll in General PE cou
-
-開課序號：1805 加選成功
+Class ID: 0000 Add Failed E044 The selected course reference number does not exist, please check.
 
