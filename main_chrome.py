@@ -1,7 +1,7 @@
 import threading
 from tkinter import *
 from tkinter import ttk
-from datetime import datetime, time
+from datetime import datetime, time as Time
 from time import sleep
 from selenium import webdriver  # for operating the website
 from selenium.webdriver.common.by import By
@@ -21,6 +21,7 @@ CONFIRM_FAIL = "請輸入學號、密碼及驗證碼...(「淡江大學單一登
                "※105學年度入學新生(含轉學生)起，預設為西元生日(西元年/月/日)後6碼，" \
                "例如西元生日為1997/01/05，則後6碼為970105※\nE903 驗證碼輸入錯誤,請重新輸入 !!!"
 WRONG_TIME = "E999 登入失敗(非帳號密碼錯誤) ???\nE051 目前不是您的選課開放時間"
+MAINTAIN_TIME = "E999 登入失敗(非帳號密碼錯誤) ???\nE071 現在為選課每日系統維護時間(11:30-12:30)"
 
 LOGIN_FAIL_ENG = "E901 Student ID number error???"
 CONFIRM_FAIL_ENG = "Please enter your Student ID number, Password and Verify code !!!\n" \
@@ -29,6 +30,7 @@ CONFIRM_FAIL_ENG = "Please enter your Student ID number, Password and Verify cod
     "of your date of birth (yyyy/mm/dd), for example, if your birthday is 1997/01/05, " \
     "your password will be 970105.)\nE903 Confirm code input Error !!!"
 WRONG_TIME_ENG = "E999 Login Unsuccessful???\nE051 Currently not open for you"
+MAINTAIN_TIME_ENG = "E999 Login Unsuccessful???\nE071 The daily maintain hour(11:30-12:30)"
 
 ADD_SUCCESS = "加選成功"
 ADD_FAIL = "加選失敗"
@@ -140,7 +142,7 @@ class AutoClassChoosing:
 
             if msg.text == LOGIN_FAIL_ENG:
                 return 1
-            elif msg.text == CONFIRM_FAIL_ENG:
+            elif CONFIRM_FAIL_ENG in msg.text:
                 return 2
             elif WRONG_TIME_ENG in msg.text:
                 msg_text = msg.text.split('\n')
@@ -151,12 +153,14 @@ class AutoClassChoosing:
                     time, '%Y-%m-%d %H:%M:%S')
 
                 return 3
-            else:
+            elif MAINTAIN_TIME_ENG in msg.text:
                 current_date = datetime.now().date()
-                noon_time = time(hour=12, minute=30)
+                noon_time = Time(hour=12, minute=30)
 
                 self.starting_time = datetime.combine(current_date, noon_time)
 
+                return 3
+            else:
                 return 4
 
     def auto_detect_confirm_code(self) -> str:
