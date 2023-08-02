@@ -83,7 +83,7 @@ class AutoClassChoosing:
         class_choosing_status = self.choose_classes(entries=entries)
 
         if class_choosing_status == 0:  # class choosing successfully
-            print('完成自動選課，詳細結果紀錄於 result.txt')
+            print('The program finished! Log messages are written in result.txt')
 
             logout_btn = self.driver.find_element(
                 By.XPATH, '//*[@id="btnLogout"]')
@@ -91,7 +91,7 @@ class AutoClassChoosing:
 
             self.driver.close()
         else:
-            print('選課錯誤，程式將中斷執行')
+            print('Class choosing error! End up the program.')
 
             self.driver.close()
             exit(1)
@@ -124,7 +124,7 @@ class AutoClassChoosing:
             confirm_code_input = self.driver.find_element(
                 By.XPATH, '//*[@id="txtCONFM"]')
         except Exception as e:
-            print('網頁HTML錯誤')
+            print('HTML error!')
 
             return 4
 
@@ -192,7 +192,7 @@ class AutoClassChoosing:
         with open('result.txt', 'w') as result_file:
             for entry in entries:
                 id = entry.value.get()
-                line = '開課序號：' + id + ' '
+                line = 'Class ID: ' + id + ' '
 
                 # class id input
                 class_id_input = self.driver.find_element(
@@ -388,7 +388,7 @@ class MainUI:
         try:
             self.bot.close()
         except Exception as e:
-            print('網頁已關閉')
+            print('Browser closed.')
 
         self.root.quit()
         exit(1)
