@@ -51,7 +51,8 @@ class AutoClassChoosing:
         chrome_option = Options()
         chrome_option.add_argument('--log-level=3')
         self.driver = webdriver.Chrome(
-            executable_path=ChromeDriverManager().install(),
+            executable_path=ChromeDriverManager(
+                version='114.0.5735.90').install(),
             options=chrome_option
         )
 
@@ -211,9 +212,9 @@ class AutoClassChoosing:
                 msg_in_line = msg.text.split('\n')
 
                 if ADD_SUCCESS_ENG in msg.text:
-                    line += ADD_SUCCESS
+                    line += ADD_SUCCESS_ENG
                 elif ADD_FAIL_ENG in msg.text:
-                    line += (ADD_FAIL + " ")
+                    line += (ADD_FAIL_ENG + " ")
                     line += msg_in_line[1]
                 else:
                     line += "ERROR"
