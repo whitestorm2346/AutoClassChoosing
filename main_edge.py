@@ -30,8 +30,14 @@ MAINTAIN_TIME_ENG = "E999 Login Unsuccessful???\nE071 The daily maintain hour(11
 ADD_SUCCESS = "加選成功"
 ADD_FAIL = "加選失敗"
 
+DROP_SUCCESS = "退選成功"
+DROP_FAIL = "退選失敗"
+
 ADD_SUCCESS_ENG = "Add successfully"
-ADD_FAIL_ENG = "Add Failed"
+ADD_FAIL_ENG = "Add failed"
+
+DROP_SUCCESS_ENG = "Drop successfully"
+DROP_FAIL_ENG = "Drop Failed"
 
 RESULT_FILE = 'result.txt'
 
@@ -187,7 +193,7 @@ class AutoClassChoosing:
         with open('result.txt', 'w') as result_file:
             for entry in entries:
                 id = entry.value.get()
-                line = 'Class ID: ' + id + ' '
+                line = 'Class ID [' + id + ']: '
 
                 # class id input
                 class_id_input = self.driver.find_element(
@@ -195,10 +201,19 @@ class AutoClassChoosing:
                 class_id_input.clear()
                 class_id_input.send_keys(id)
 
-                # add button click
-                add_btn = self.driver.find_element(
-                    By.XPATH, '//*[@id="btnAdd"]')
-                add_btn.click()
+                if entry.add_btn_value:
+                    # add button click
+                    add_btn = self.driver.find_element(
+                        By.XPATH, '//*[@id="btnAdd"]')
+                    add_btn.click()
+                elif entry.drop_btn_value:
+                    # del button click
+                    drop_btn = self.driver.find_element(
+                        By.XPATH, '//*[@id="btnDel"]')
+                    drop_btn.click()
+                else:
+                    print('UI error!')
+                    exit(1)
 
                 msg = self.driver.find_element(
                     By.XPATH, '//*[@id="form1"]/div[3]/table/tbody/tr[2]/td[3]')
@@ -208,7 +223,12 @@ class AutoClassChoosing:
                 if ADD_SUCCESS_ENG in msg.text:
                     line += ADD_SUCCESS_ENG
                 elif ADD_FAIL_ENG in msg.text:
-                    line += (ADD_FAIL_ENG + " ")
+                    line += (ADD_FAIL_ENG + " -> ")
+                    line += msg_in_line[1]
+                elif DROP_SUCCESS_ENG in msg.text:
+                    line += DROP_SUCCESS_ENG
+                elif DROP_FAIL_ENG in msg.text:
+                    line += (DROP_FAIL_ENG + " -> ")
                     line += msg_in_line[1]
                 else:
                     line += "ERROR"
@@ -231,19 +251,45 @@ class InputObject:
         self.label = Label(container)
         self.entry = Entry(container, textvariable=self.value)
 
+        self.add_btn = Button(container)
+        self.add_btn_value = True
+        self.add_btn.config(text='Add', font=(ENGLISH, 12, 'bold'), foreground='black',
+                            height=1, width=5, command=self.add_btn_onclick)
+
+        self.drop_btn = Button(container)
+        self.drop_btn_value = False
+        self.drop_btn.config(text='Drop', font=(ENGLISH, 12), foreground='gray',
+                             height=1, width=5, command=self.drop_btn_onclick)
+
     def set_label(self, text) -> None:
         self.label.config(text=text, font=(ENGLISH, 14))
 
     def set_entry(self) -> None:
         self.entry.config(font=(ENGLISH, 14))
 
+    def add_btn_onclick(self) -> None:
+        self.add_btn_value = True
+        self.add_btn.config(font=(ENGLISH, 12, 'bold'), foreground='black')
+        self.drop_btn_value = False
+        self.drop_btn.config(font=(ENGLISH, 12), foreground='gray')
+
+    def drop_btn_onclick(self) -> None:
+        self.drop_btn_value = True
+        self.drop_btn.config(font=(ENGLISH, 12, 'bold'), foreground='black')
+        self.add_btn_value = False
+        self.add_btn.config(font=(ENGLISH, 12), foreground='gray')
+
     def place(self, index) -> None:
         self.label.grid(row=index, column=0, padx=15, pady=10)
         self.entry.grid(row=index, column=1, padx=10, pady=10)
+        self.add_btn.grid(row=index, column=2, padx=5, pady=10)
+        self.drop_btn.grid(row=index, column=3, padx=5, pady=10)
 
     def destroy(self) -> None:
         self.entry.destroy()
         self.label.destroy()
+        self.add_btn.destroy()
+        self.drop_btn.destroy()
 
 
 class MainUI:
@@ -258,7 +304,7 @@ class MainUI:
     def init_main_frame(self) -> None:
         self.root = Tk()
         self.root.resizable(False, False)
-        self.root.geometry("400x600")
+        self.root.geometry("450x600")
         self.root.title('AutoClassChoosing Set-up')
 
     def init_login_frame(self) -> None:
@@ -318,22 +364,22 @@ class MainUI:
         self.add_btn = Button(self.root)
         self.add_btn.config(text='add', font=(ENGLISH, 14, 'bold'),
                             height=2, width=6, command=self.add_btn_onclick)
-        self.add_btn.pack(side=LEFT, padx=5)
+        self.add_btn.pack(side=LEFT, padx=15)
 
         self.del_btn = Button(self.root)
         self.del_btn.config(text='del', font=(ENGLISH, 14, 'bold'),
                             height=2, width=6, command=self.del_btn_onclick)
-        self.del_btn.pack(side=LEFT, padx=5)
+        self.del_btn.pack(side=LEFT, padx=10)
 
         self.start_btn = Button(self.root)
         self.start_btn.config(text='start', font=(ENGLISH, 14, 'bold'),
                               height=2, width=8, command=self.start_btn_onclick)
-        self.start_btn.pack(side=LEFT, padx=5)
+        self.start_btn.pack(side=LEFT, padx=10)
 
         self.quit_btn = Button(self.root)
         self.quit_btn.config(text='quit', font=(ENGLISH, 14, 'bold'),
                              height=2, width=8, command=self.quit_btn_onclick)
-        self.quit_btn.pack(side=LEFT, padx=5)
+        self.quit_btn.pack(side=LEFT, padx=15)
 
     def place_entries(self):
         for i in range(0, len(self.entries)):

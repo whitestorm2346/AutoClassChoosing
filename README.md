@@ -12,6 +12,8 @@ The program will fetch the starting time data automatically.
 
 [Microsoft Edge Version](https://www.dropbox.com/scl/fi/l4lkxh5h7h6klajqqf1od/v3.1-edge.rar?rlkey=ank0k3bfglx3dzxnkb6cirr41&dl=1)
 
+[Chrome Version](https://www.dropbox.com/scl/fi/q9d3yvuq8amts008ywfzz/v3.1-chrome.rar?rlkey=hiqf1bgq0z5t1bpwd181gcrzp&dl=1)
+
 ### Version 2.1 Download
 
 The program will download the web driver automatically.
