@@ -21,7 +21,6 @@ CONFIRM_FAIL = "E903 驗證碼輸入錯誤,請重新輸入 !!!"
 WRONG_TIME = "E999 登入失敗(非帳號密碼錯誤) ???\nE051 目前不是您的選課開放時間"
 MAINTAIN_TIME = "E999 登入失敗(非帳號密碼錯誤) ???\nE071 現在為選課每日系統維護時間(11:30-12:30)"
 
-
 LOGIN_FAIL_ENG = "E901 Student ID number error???"
 CONFIRM_FAIL_ENG = "E903 Confirm code input Error !!!"
 WRONG_TIME_ENG = "E999 Login Unsuccessful???\nE051 Currently not open for you"
@@ -40,6 +39,7 @@ DROP_SUCCESS_ENG = "Drop successfully"
 DROP_FAIL_ENG = "Drop Failed"
 
 RESULT_FILE = 'result.txt'
+DATA_FILE = '_data.txt'
 
 
 class AutoClassChoosing:
@@ -190,7 +190,7 @@ class AutoClassChoosing:
         return confirm_code
 
     def choose_classes(self, entries) -> int:
-        with open('result.txt', 'w') as result_file:
+        with open(RESULT_FILE, 'w') as result_file:
             for entry in entries:
                 id = entry.value.get()
                 line = 'Class ID [' + id + ']: '
@@ -333,6 +333,15 @@ class MainUI:
             font=(ENGLISH, 12), textvariable=self.password)
         self.password_entry.pack(side=TOP, fill='x', padx=5, pady=10)
 
+        with open(DATA_FILE, 'r') as data_file:
+            data = data_file.readline().replace('\n', '').split(' ')
+
+            if data[0] != 'null':
+                self.student_id_entry.insert(0, data[0])
+
+            if data[1] != 'null':
+                self.password_entry.insert(0, data[1])
+
     def init_class_id_frame(self) -> None:
         self.class_id_frame = LabelFrame(self.root)
         self.class_id_frame.config(text=' Class ID Input ', font=(ENGLISH, 12))
@@ -395,12 +404,18 @@ class MainUI:
             self.inner_canvas.config(width=self.window_frame.winfo_reqwidth())
 
     def auto_class_choosing(self):
+        self.save_data()
+
         self.bot = AutoClassChoosing(
             student_num=self.student_id.get(),
             password=self.password.get()
         )
 
         self.bot.run(entries=self.entries)
+
+    def save_data(self):
+        with open(DATA_FILE, 'w') as data_file:
+            data_file.write(self.student_id.get() + ' ' + self.password.get())
 
     def add_btn_onclick(self):
         idx = len(self.entries)

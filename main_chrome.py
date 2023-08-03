@@ -45,6 +45,7 @@ DROP_SUCCESS_ENG = "Drop successfully"
 DROP_FAIL_ENG = "Drop Failed"
 
 RESULT_FILE = 'result.txt'
+DATA_FILE = '_data.txt'
 
 
 class AutoClassChoosing:
@@ -339,6 +340,15 @@ class MainUI:
             font=(ENGLISH, 12), textvariable=self.password)
         self.password_entry.pack(side=TOP, fill='x', padx=5, pady=10)
 
+        with open(DATA_FILE, 'r') as data_file:
+            data = data_file.readline().replace('\n', '').split(' ')
+
+            if data[0] != 'null':
+                self.student_id_entry.insert(0, data[0])
+
+            if data[1] != 'null':
+                self.password_entry.insert(0, data[1])
+
     def init_class_id_frame(self) -> None:
         self.class_id_frame = LabelFrame(self.root)
         self.class_id_frame.config(text=' Class ID Input ', font=(ENGLISH, 12))
@@ -401,12 +411,18 @@ class MainUI:
             self.inner_canvas.config(width=self.window_frame.winfo_reqwidth())
 
     def auto_class_choosing(self):
+        self.save_data()
+
         self.bot = AutoClassChoosing(
             student_num=self.student_id.get(),
             password=self.password.get()
         )
 
         self.bot.run(entries=self.entries)
+
+    def save_data(self):
+        with open(DATA_FILE, 'w') as data_file:
+            data_file.write(self.student_id.get() + ' ' + self.password.get())
 
     def add_btn_onclick(self):
         idx = len(self.entries)
