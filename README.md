@@ -2,8 +2,17 @@
 
 ## What's new?
 
-In latest version, the web driver uses english version website to choose the classes and that will be a little bit faster to done this program.
-Then we added auto-detect starting time method because it is hard to let user entering the correct format for datetime setting.
+In the new version, we have introduced a "Drop Course" function and enhanced the convenience and security of user input for account credentials. The password input will be masked by bullet points, concealing the original password. Additionally, there is an option to select "Remember Password," allowing automatic prefilling of both the username and password for the next use of this application.
+
+### Version 4.0 Download
+
+The program can drop the course in the version.
+The program can automatically insert the student ID of the last user, and if the remember-password-checkbox was selected, the password will be insert too.
+In this version, password input will be covered by the dot, you can click the show-password-checkbox to show your password.
+
+[Microsoft Edge Version](https://www.dropbox.com/scl/fi/z49vwfrbhcz4c1zdyk0xr/v4.0-edge.rar?rlkey=dkkad4znzkubbr5xsdz9eqjvd&dl=1)
+
+[Chrome Version](https://www.dropbox.com/scl/fi/0q8z832aneku6fn9dndxf/v4.0-chrome.rar?rlkey=ta169zl78ou1acdj1saaxv03m&dl=1)
 
 ### Version 3.1 Download
 

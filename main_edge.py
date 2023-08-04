@@ -72,6 +72,11 @@ class AutoClassChoosing:
             elif login_status == 2:  # wrong confirm code
                 print('Wrong confirm code, program will retry now.')
             elif login_status == 3:  # wrong login time
+                if datetime.now() > self.starting_time:
+                    print('Time Expired!')
+
+                    return -1
+
                 print(
                     f'The program will start at {datetime.strftime(self.starting_time, "%Y/%m/%d %H:%M:%S")}')
 
@@ -79,7 +84,8 @@ class AutoClassChoosing:
                     sleep(1)
             else:  # other situations
                 print('Login error!')
-                exit(1)
+
+                return -1
 
         class_choosing_status = self.choose_classes(entries=entries)
 
@@ -95,7 +101,8 @@ class AutoClassChoosing:
             print('Class choosing error! End up the program.')
 
             self.driver.close()
-            exit(1)
+
+            return -1
 
         return 0
 
@@ -154,6 +161,7 @@ class AutoClassChoosing:
                     time, '%Y-%m-%d %H:%M:%S')
 
                 return 3
+
             elif MAINTAIN_TIME_ENG in msg.text:
                 current_date = datetime.now().date()
                 noon_time = Time(hour=12, minute=30)
@@ -213,7 +221,8 @@ class AutoClassChoosing:
                     drop_btn.click()
                 else:
                     print('UI error!')
-                    exit(1)
+
+                    return -1
 
                 msg = self.driver.find_element(
                     By.XPATH, '//*[@id="form1"]/div[3]/table/tbody/tr[2]/td[3]')
@@ -301,10 +310,16 @@ class MainUI:
 
         self.threads = []  # init thread
 
+    def __show_password_onclick__(self):
+        if self.show_password_value.get():
+            self.password_entry.config(show='')
+        else:
+            self.password_entry.config(show='\u25CF')
+
     def init_main_frame(self) -> None:
         self.root = Tk()
         self.root.resizable(False, False)
-        self.root.geometry("450x600")
+        self.root.geometry("450x625")
         self.root.title('AutoClassChoosing Set-up')
 
     def init_login_frame(self) -> None:
@@ -324,14 +339,31 @@ class MainUI:
         self.student_id_entry.pack(side=TOP, fill='x', padx=5, pady=10)
 
         self.password_label = Label(self.login_frame)
-        self.password_label.config(text='Password', font=(ENGLISH, 14, 'bold'))
+        self.password_label.config(
+            text='Password', font=(ENGLISH, 14, 'bold'))
         self.password_label.pack(side=TOP, pady=5)
 
         self.password = StringVar(self.login_frame)
         self.password_entry = Entry(self.login_frame)
         self.password_entry.config(
-            font=(ENGLISH, 12), textvariable=self.password)
+            font=(ENGLISH, 12), textvariable=self.password, show='\u25CF')
         self.password_entry.pack(side=TOP, fill='x', padx=5, pady=10)
+
+        # Set Login Inner Frame
+
+        self.login_inner_frame = Frame(self.login_frame)
+        self.login_inner_frame.pack(side=TOP, fill='x')
+
+        self.show_password_value = BooleanVar()
+        self.show_password_checkbox = Checkbutton(
+            self.login_inner_frame, text='Show Password',
+            variable=self.show_password_value, command=self.__show_password_onclick__)
+        self.show_password_checkbox.pack(side=LEFT, padx=10)
+
+        self.checkbox_value = BooleanVar()
+        self.checkbox = Checkbutton(
+            self.login_inner_frame, text='Remember Password', variable=self.checkbox_value)
+        self.checkbox.pack(side=RIGHT, padx=10)
 
         with open(DATA_FILE, 'r') as data_file:
             data = data_file.readline().replace('\n', '').split(' ')
@@ -341,6 +373,9 @@ class MainUI:
 
             if data[1] != 'null':
                 self.password_entry.insert(0, data[1])
+
+            if data[2] == 'True':
+                self.checkbox_value.initialize(True)
 
     def init_class_id_frame(self) -> None:
         self.class_id_frame = LabelFrame(self.root)
@@ -414,8 +449,16 @@ class MainUI:
         self.bot.run(entries=self.entries)
 
     def save_data(self):
+        bool_value = self.checkbox_value.get()
+
+        if bool_value:
+            password = self.password.get()
+        else:
+            password = 'null'
+
         with open(DATA_FILE, 'w') as data_file:
-            data_file.write(self.student_id.get() + ' ' + self.password.get())
+            data_file.write(self.student_id.get() + ' ' +
+                            password + ' ' + str(bool_value))
 
     def add_btn_onclick(self):
         idx = len(self.entries)
